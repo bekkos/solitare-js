@@ -1,0 +1,13 @@
+// TODO: Card tracking system
+- Implement the system that keeps track of which cards have been discovered.
+Feed the discovered cards into the renderer and make the discovered cards render
+facing upwards.
+
+*/* Might be done.
+
+// TODO: Implement shuffleStack
+- Implement the shufflestack and the logic associated with it.
+
+// TODO: Implement gamelogic
+- Add checks to ensure that the rules of solirate are upheld and 
+allow for game completion.
