@@ -1,30 +1,30 @@
 /* DROP LOGIC */
-
 const allowDrop = (e) => {
     e.preventDefault();
 }
 
 const drag = (e) => {
-    e.dataTransfer.setData("text", e.target.id);
+    e.dataTransfer.setData("targetID", e.target.id);
 }
 
 const drop = (e) => {
     e.preventDefault();
     if (e.target.nodeName == "IMG") {
         let parentDiv = e.target.parentNode;
-        const data = e.dataTransfer.getData("text");
+        const data = e.dataTransfer.getData("targetID");
         parentDiv.appendChild(document.getElementById(data));
+        console.log(data);
         moveCard(data, e.target.closest(".stack").id);
+        console.log("1");
         drawCards();
         return;
     }
-    const data = e.dataTransfer.getData("text");
+    const data = e.dataTransfer.getData("targetID");
     e.target.appendChild(document.getElementById(data));
-    moveCard(data, e.target.closest(".stack").id);
-    drawCards();
     console.log(data);
-    console.log(e.target.closest(".stack").id);
-    
+    moveCard(data, e.target.closest(".stack").id);
+    console.log("1");
+    drawCards();
     return;
 }
 
@@ -46,8 +46,8 @@ let deck = [
 ];
 
 
+let shuffleStack = []; // Shuffle Stack
 
-let topDeckRightBoxOne = [];
 
 let stackOne = []; // 1
 let stackTwo = []; // 2
@@ -65,10 +65,10 @@ let completionStackFour = []; // Completion Stakc 4
 let stacks = [stackOne, stackTwo, stackThree,
     stackFour, stackFive, stackSix, stackSeven,
     completionStackOne, completionStackTwo,
-    completionStackThree, completionStackFour];
+    completionStackThree, completionStackFour, shuffleStack];
 
 
-let discovered = ['2cl'];
+let discovered = [];
 
 
 
@@ -83,7 +83,7 @@ const locateCard = (id) => {
             'array': deck,
             'index': i
         }
-        console.log("lc-1");
+        console.log(data);
         return data;
     }
 
@@ -94,17 +94,27 @@ const locateCard = (id) => {
                 'array': stacks[i],
                 'index': x
             }
-            console.log("lc-2: " + data.array + " " + data.index);
+            console.log(data);
             return data;
         }
     }
-    console.log("lc-3");
+    console.log("-1");
     return -1;
 }
 
 const moveCard = (id, destination) => {
     let location = locateCard(id);
+    console.log("broke");
     if (location == -1) return;
+    console.log(location.array);
+
+    if(location.array == shuffleStack) {
+        location.array.splice(location.index, 1);
+        eval(destination).push(id);
+
+        shuffle();
+        return;
+    }
 
     try {
         children = getChildren(id);
@@ -134,6 +144,31 @@ const getChildren = (id) => {
 
 const getRandomInt = (max) => {
     return Math.floor(Math.random() * max);
+}
+
+const shuffle = () => {
+    if(deck.length <= 0) return;
+    
+    let render = document.getElementById("shuffleStack");
+    let randInt = getRandomInt(deck.length-1);
+    
+    if(render.innerHTML != "") {
+        deck.push(shuffleStack[0]);
+    }
+
+    render.innerHTML = "";
+    
+    if(shuffleStack.length >= 1) {
+        shuffleStack = [];
+    }
+
+    render.innerHTML = `
+            <div id="${deck[randInt]}" class="card" draggable="true" ondragstart="drag(event)">
+                <img src="./media/cards/${deck[randInt]}.png" draggable="false"   alt="">
+            </div>
+            `;
+    shuffleStack.push(deck[randInt]);
+    deck.splice(randInt,1);
 }
 
 const initiateGame = () => {
@@ -177,6 +212,7 @@ const initiateGame = () => {
         deck.splice(index, 1);
     }
     drawCards();
+    shuffle();
 }
 
 const drawCards = () => {
@@ -217,6 +253,9 @@ const drawCards = () => {
                 break;
             case 10:
                 elementId = "completionStackFour";
+                break;
+            case 11:
+                elementId = "shuffleStack";
                 break;
             default:
                 break;
