@@ -73,6 +73,21 @@ html, body {
     height: 230px;
 }
 
+.card-c {
+    position: absolute;
+    top: 0;
+}
+
+.card-c img {
+    width: 150px;
+    height: 230px;
+}
+
+.card-c:first-child {
+    position: relative;
+    top: 0;
+}
+
 #right {
     width: 40%;
     height: 100%;

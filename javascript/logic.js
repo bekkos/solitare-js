@@ -13,17 +13,13 @@ const drop = (e) => {
         let parentDiv = e.target.parentNode;
         const data = e.dataTransfer.getData("targetID");
         parentDiv.appendChild(document.getElementById(data));
-        console.log(data);
         moveCard(data, e.target.closest(".stack").id);
-        console.log("1");
         drawCards();
         return;
     }
     const data = e.dataTransfer.getData("targetID");
     e.target.appendChild(document.getElementById(data));
-    console.log(data);
     moveCard(data, e.target.closest(".stack").id);
-    console.log("1");
     drawCards();
     return;
 }
@@ -76,7 +72,7 @@ let discovered = [];
 // Toolbox
 
 const locateCard = (id) => {
-
+    console.log("Locate card ID: " + id);
     if (deck.indexOf(id) != -1) {
         let i = deck.indexOf(id);
         data = {
@@ -103,16 +99,16 @@ const locateCard = (id) => {
 }
 
 const moveCard = (id, destination) => {
+    console.log("Move card ID: " + id);
+    console.log("Move card destination: " + destination);
     let location = locateCard(id);
-    console.log("broke");
     if (location == -1) return;
-    console.log(location.array);
 
-    if(location.array == shuffleStack) {
+    if(location.array == stacks[11]) {
         location.array.splice(location.index, 1);
         eval(destination).push(id);
-
         shuffle();
+        deck.pop();
         return;
     }
 
@@ -153,13 +149,13 @@ const shuffle = () => {
     let randInt = getRandomInt(deck.length-1);
     
     if(render.innerHTML != "") {
-        deck.push(shuffleStack[0]);
+        deck.push(stacks[11][0]);
     }
 
     render.innerHTML = "";
     
-    if(shuffleStack.length >= 1) {
-        shuffleStack = [];
+    if(stacks[11].length >= 1) {
+        stacks[11] = [];
     }
 
     render.innerHTML = `
@@ -167,9 +163,11 @@ const shuffle = () => {
                 <img src="./media/cards/${deck[randInt]}.png" draggable="false"   alt="">
             </div>
             `;
-    shuffleStack.push(deck[randInt]);
+    stacks[11].push(deck[randInt]);
     deck.splice(randInt,1);
+    
 }
+
 
 const initiateGame = () => {
     let index = getRandomInt(deck.length);
@@ -213,13 +211,14 @@ const initiateGame = () => {
     }
     drawCards();
     shuffle();
+    deck.pop();
 }
 
 const drawCards = () => {
     let elementId;
     for (let z = 0; z < stacks.length; z++) {
         if (stacks[z].length < 1) continue;
-
+        let classToApply = "card";
         switch (z) {
             case 0:
                 elementId = "stackOne";
@@ -244,15 +243,19 @@ const drawCards = () => {
                 break;
             case 7:
                 elementId = "completionStackOne";
+                classToApply = "card-c";
                 break;
             case 8:
                 elementId = "completionStackTwo";
+                classToApply = "card-c";
                 break;
             case 9:
                 elementId = "completionStackThree";
+                classToApply = "card-c";
                 break;
             case 10:
                 elementId = "completionStackFour";
+                classToApply = "card-c";
                 break;
             case 11:
                 elementId = "shuffleStack";
@@ -265,16 +268,30 @@ const drawCards = () => {
         render = document.getElementById(elementId);
         if (stacks[z].length <= 1) {
             render.innerHTML = `
-            <div id="${stacks[z][0]}" class="card" draggable="true" ondragstart="drag(event)">
+            <div id="${stacks[z][0]}" class="${classToApply}" draggable="true" ondragstart="drag(event)">
                 <img src="./media/cards/${stacks[z][0]}.png" draggable="false"   alt="">
             </div>
             `;
+
+            if(!discovered.includes(stacks[z][0])) {
+                discovered.push(stacks[z][0]);
+            }
+
         } else {
-            render.innerHTML = `
-                <div id="${stacks[z][0]}" class="card" draggable="true" ondragstart="drag(event)">
+
+            if(discovered.includes(stacks[z][0])) {
+                render.innerHTML = `
+                <div id="${stacks[z][0]}" class="${classToApply}" draggable="true" ondragstart="drag(event)">
+                    <img src="./media/cards/${stacks[z][0]}.png" draggable="false"   alt="">
+                </div>
+                `;
+            } else {
+                render.innerHTML = `
+                <div id="${stacks[z][0]}" class="${classToApply}" draggable="true" ondragstart="drag(event)">
                     <img src="./media/cards/backside2.png" draggable="false"   alt="">
                 </div>
                 `;
+            }
         }
 
 
@@ -282,7 +299,7 @@ const drawCards = () => {
         for (let y = 1; y < stacks[z].length; y++) {
             if (y == stacks[z].length - 1) {
                 stackLastNote.innerHTML += `
-                <div id="${stacks[z][y]}" class="card" draggable="true" ondragstart="drag(event)">
+                <div id="${stacks[z][y]}" class="${classToApply}" draggable="true" ondragstart="drag(event)">
                     <img src="./media/cards/${stacks[z][y]}.png" draggable="false"   alt="">
                 </div>
                 `;
@@ -293,13 +310,13 @@ const drawCards = () => {
             } else {
                 if(discovered.includes(stacks[z][y])) {
                     stackLastNote.innerHTML += `
-                    <div id="${stacks[z][y]}" class="card" draggable="true" ondragstart="drag(event)">
+                    <div id="${stacks[z][y]}" class="${classToApply}" draggable="true" ondragstart="drag(event)">
                         <img src="./media/cards/${stacks[z][y]}.png" draggable="false"   alt="">
                     </div>
                     `;
                 } else {
                     stackLastNote.innerHTML += `
-                    <div id="${stacks[z][y]}" class="card" draggable="true" ondragstart="drag(event)">
+                    <div id="${stacks[z][y]}" class="${classToApply}" draggable="true" ondragstart="drag(event)">
                         <img src="./media/cards/backside2.png" draggable="false"   alt="">
                     </div>
                     `;
@@ -311,6 +328,5 @@ const drawCards = () => {
     }
 
 }
-
 
 initiateGame();
