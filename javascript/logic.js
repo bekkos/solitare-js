@@ -12,10 +12,16 @@ const drop = (e) => {
     if (e.target.nodeName == "IMG") {
         let parentDiv = e.target.parentNode;
         const data = e.dataTransfer.getData("targetID");
-        parentDiv.appendChild(document.getElementById(data));
-        moveCard(data, e.target.closest(".stack").id);
-        drawCards();
-        return;
+        
+        console.log(checkIfLegalMove(parseCard(data), parseCard(e.target.parentNode.id)));
+        if(checkIfLegalMove(parseCard(data), parseCard(e.target.parentNode.id))) {
+            parentDiv.appendChild(document.getElementById(data));
+            moveCard(data, e.target.closest(".stack").id);
+            drawCards();
+            return;
+        } else {
+            return;
+        }  
     }
     const data = e.dataTransfer.getData("targetID");
     e.target.appendChild(document.getElementById(data));
@@ -64,6 +70,8 @@ let stacks = [stackOne, stackTwo, stackThree,
     completionStackThree, completionStackFour, shuffleStack];
 
 
+
+
 let discovered = [];
 
 
@@ -72,14 +80,12 @@ let discovered = [];
 // Toolbox
 
 const locateCard = (id) => {
-    console.log("Locate card ID: " + id);
     if (deck.indexOf(id) != -1) {
         let i = deck.indexOf(id);
         data = {
             'array': deck,
             'index': i
         }
-        console.log(data);
         return data;
     }
 
@@ -90,17 +96,13 @@ const locateCard = (id) => {
                 'array': stacks[i],
                 'index': x
             }
-            console.log(data);
             return data;
         }
     }
-    console.log("-1");
     return -1;
 }
 
 const moveCard = (id, destination) => {
-    console.log("Move card ID: " + id);
-    console.log("Move card destination: " + destination);
     let location = locateCard(id);
     if (location == -1) return;
 
@@ -167,6 +169,114 @@ const shuffle = () => {
     deck.splice(randInt,1);
     
 }
+
+
+const parseCard = (id) => {
+    let specialCues = ['jack', 'queen', 'king', 'ace'];
+    let value;
+    let type;
+    let data;
+    for(let i = 0; i < specialCues.length; i++) {
+        if(id.includes(specialCues[i])) {
+            value = id.slice(id.indexOf(specialCues[i]), id.indexOf(specialCues[i]) + specialCues[i].length);
+            type = id.slice(id.indexOf(specialCues[i]) + specialCues[i].length, id.length);
+            data = {
+                "value": value,
+                "type": type
+            }
+            return data;
+        }
+    }
+
+    if(id.includes("10")) {
+        value = id.slice(0,2);
+        type = id.slice(2, id.length);
+        data = {
+            "value": value,
+            "type": type
+        }
+        return data;
+    }
+
+    value = id.slice(0,1);
+    type = id.slice(1, id.length);
+    data = {
+        "value": value,
+        "type": type
+    }
+    return data;
+}
+
+const checkIfLegalMove = (mCard, sCard) => {
+    // mCard = Moved card.
+    // sCard = Stationary card.
+    console.log("-- Current cards --");
+    console.log("mCard: " + mCard.value + " | " + mCard.type);
+    console.log("sCard: " + sCard.value + " | " + sCard.type);
+
+    let specialCues = ['jack', 'queen', 'king', 'ace'];
+    let specialCuesWithRanking = {
+        'jack': 1,
+        'queen': 2,
+        'king': 3,
+        'ace': 4
+    }
+
+    if(mCard.type == sCard.type) {
+        console.log("Cards are same type");
+        let allowedLocations = [completionStackOne, completionStackTwo, completionStackThree, completionStackFour];
+        let completionCard = false;
+        for(let i = 0; i < stacks.length; i++) {
+            if(stacks[i].includes(sCard.value+sCard.type)) {
+                if(allowedLocations.includes(stacks[i])) completionCard = true;
+            }
+        }
+        if(!completionCard) {
+            return false; // same type
+        } else {
+            console.log("Entered.");
+            if(specialCues.includes(mCard.value) && sCard.value != "ace") {
+                if(specialCuesWithRanking[mCard.value] == specialCuesWithRanking[sCard.value] + 1) return true;
+            }
+
+            if(parseInt(sCard.value) == 10 && mCard.value == "jack") return true;
+
+            if(sCard.value == "ace" && mCard.value == "2") return true; 
+            if(parseInt(mCard.value) == parseInt(sCard.value) + 1) return true;
+        }
+    }
+    if(mCard.type == "sp" && sCard.type == "cl" || mCard.type == "cl" && sCard.type == "sp") {
+        console.log("Cards are both black");
+        return false; // both black
+    } 
+    if(mCard.type == "di" && sCard.type == "he" || mCard.type == "he" && sCard.type == "di") {
+        console.log("Cards are both red");
+        return false; // both red
+    }
+
+    if(specialCues.includes(mCard.value) || specialCues.includes(sCard.value)) {
+        if(!specialCues.includes(mCard.value) && sCard.value != "jack") {
+            console.log("mCard mCard is not special cues and sCard is not jack.");
+            return false;
+        }
+        if(sCard.value == "jack" && mCard.value == "10") {
+            console.log("sCard is jack and mCard is 10");
+            return true;
+        }
+        // One of the cards are a special card.
+        if(specialCuesWithRanking[mCard.value] == specialCuesWithRanking[sCard.value] - 1) {
+            console.log("mCard is equal to the sCard value - 1");
+            return true;
+        }
+        console.log("Card failed all tests");
+        return false;
+    }
+
+    if(parseInt(mCard.value) == parseInt(sCard.value) - 1) return true;
+    return false;
+}
+
+
 
 
 const initiateGame = () => {
