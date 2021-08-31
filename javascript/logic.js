@@ -13,7 +13,6 @@ const drop = (e) => {
         let parentDiv = e.target.parentNode;
         const data = e.dataTransfer.getData("targetID");
         
-        console.log(checkIfLegalMove(parseCard(data), parseCard(e.target.parentNode.id)));
         if(checkIfLegalMove(parseCard(data), parseCard(e.target.parentNode.id))) {
             parentDiv.appendChild(document.getElementById(data));
             moveCard(data, e.target.closest(".stack").id);
@@ -210,9 +209,6 @@ const parseCard = (id) => {
 const checkIfLegalMove = (mCard, sCard) => {
     // mCard = Moved card.
     // sCard = Stationary card.
-    console.log("-- Current cards --");
-    console.log("mCard: " + mCard.value + " | " + mCard.type);
-    console.log("sCard: " + sCard.value + " | " + sCard.type);
 
     let specialCues = ['jack', 'queen', 'king', 'ace'];
     let specialCuesWithRanking = {
@@ -223,7 +219,6 @@ const checkIfLegalMove = (mCard, sCard) => {
     }
 
     if(mCard.type == sCard.type) {
-        console.log("Cards are same type");
         let allowedLocations = [completionStackOne, completionStackTwo, completionStackThree, completionStackFour];
         let completionCard = false;
         for(let i = 0; i < stacks.length; i++) {
@@ -234,7 +229,6 @@ const checkIfLegalMove = (mCard, sCard) => {
         if(!completionCard) {
             return false; // same type
         } else {
-            console.log("Entered.");
             if(specialCues.includes(mCard.value) && sCard.value != "ace") {
                 if(specialCuesWithRanking[mCard.value] == specialCuesWithRanking[sCard.value] + 1) return true;
             }
@@ -246,29 +240,23 @@ const checkIfLegalMove = (mCard, sCard) => {
         }
     }
     if(mCard.type == "sp" && sCard.type == "cl" || mCard.type == "cl" && sCard.type == "sp") {
-        console.log("Cards are both black");
         return false; // both black
     } 
     if(mCard.type == "di" && sCard.type == "he" || mCard.type == "he" && sCard.type == "di") {
-        console.log("Cards are both red");
         return false; // both red
     }
 
     if(specialCues.includes(mCard.value) || specialCues.includes(sCard.value)) {
         if(!specialCues.includes(mCard.value) && sCard.value != "jack") {
-            console.log("mCard mCard is not special cues and sCard is not jack.");
             return false;
         }
         if(sCard.value == "jack" && mCard.value == "10") {
-            console.log("sCard is jack and mCard is 10");
             return true;
         }
         // One of the cards are a special card.
         if(specialCuesWithRanking[mCard.value] == specialCuesWithRanking[sCard.value] - 1) {
-            console.log("mCard is equal to the sCard value - 1");
             return true;
         }
-        console.log("Card failed all tests");
         return false;
     }
 
